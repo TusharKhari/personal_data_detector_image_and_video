@@ -20,12 +20,13 @@ from PIL import Image
 # Configuration & Endpoints
 # ==============================================================================
 
+basee = "tushars-macbook-air-m5.tail538282.ts.net"
 # BASE_HTTP_URL = "http://localhost:8000"
 # BASE_WS_URL = "ws://localhost:8000"
 
 
-BASE_HTTP_URL = "https://yas.tail538282.ts.net"
-BASE_WS_URL = "wss://yas.tail538282.ts.net"
+BASE_HTTP_URL = f"https://{basee}"
+BASE_WS_URL = f"wss://{basee}"
 
 BACKEND_UPLOAD = f"{BASE_HTTP_URL}/upload"
 WS_URL = f"{BASE_WS_URL}/ws/analyze"
@@ -451,6 +452,17 @@ with right_col:
             scores = st.session_state.result.get("scores", [])
             
             # Rendering only when available prevents Streamlit component ghosting
+
+            if "caption_image" in st.session_state.result:
+                try:
+                    img_bytes = base64.b64decode(st.session_state.result["caption_image"])
+                    img = Image.open(io.BytesIO(img_bytes))
+                    st.markdown("### 🖼️ Video Context Image")
+                    st.image(img, use_container_width=True)
+                except Exception as e:
+                    st.error(f"Could not load context image: {e}")
+
+
             if labels and scores:
                 for label, score in sorted(zip(labels, scores), key=lambda x: x[1], reverse=True):
                     c1, c2 = st.columns([4, 1])
@@ -461,14 +473,7 @@ with right_col:
                     with c2:
                         st.write(f"**{round(safe_score * 100, 2)}%**")
 
-            if "caption_image" in st.session_state.result:
-                try:
-                    img_bytes = base64.b64decode(st.session_state.result["caption_image"])
-                    img = Image.open(io.BytesIO(img_bytes))
-                    st.markdown("### 🖼️ Video Context Image")
-                    st.image(img, use_container_width=True)
-                except Exception as e:
-                    st.error(f"Could not load context image: {e}")
+
 
 # ==============================================================================
 # Polling Loop Update
